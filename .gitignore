@@ -1,0 +1,6 @@
+.idea
+.gradle
+.grunt
+*.iml
+
+java-controller-app/target
