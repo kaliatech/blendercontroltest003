@@ -12,9 +12,10 @@ import android.widget.TextView;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.Arrays;
+import java.io.IOException;
 
 import lombok.extern.slf4j.Slf4j;
+import msgsender.MessageSender;
 
 
 @Slf4j
@@ -26,7 +27,9 @@ public class SensorListener implements SensorEventListener2 {
     private Sensor mSensor;
     private TextView tfX;
 
-    public SensorListener(Activity activity) {
+    private MessageSender sender;
+
+    public SensorListener(Activity activity, MessageSender sender) {
         //mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         //mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
@@ -36,6 +39,7 @@ public class SensorListener implements SensorEventListener2 {
         tfX = (TextView) activity.findViewById(R.id.tfX);
         tfX.setText("...");
 
+        this.sender = sender;
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -50,6 +54,12 @@ public class SensorListener implements SensorEventListener2 {
         Log.d(tag, "onSensorChanged:" + vals);
         tfX.setText(vals);
 
+
+        try {
+            sender.sendRotation(sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
+        } catch (IOException e) {
+            Log.d(tag, "Error sending rotation", e);
+        }
     }
 
     @Override

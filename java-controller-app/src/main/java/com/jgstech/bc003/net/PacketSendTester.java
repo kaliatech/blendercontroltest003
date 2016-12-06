@@ -11,7 +11,7 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 
 @Slf4j
-public class PacketSimServer {
+public class PacketSendTester {
 
     DatagramSocket socket = null;
 
@@ -26,7 +26,8 @@ public class PacketSimServer {
         byte[] buf = new byte[4];
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(4);
-        byteBuffer.putInt(count++);
+//        byteBuffer.putInt(count++);
+        byteBuffer.putFloat(count++);
 
         InetAddress address = InetAddress.getLoopbackAddress();
         DatagramPacket packet = new DatagramPacket(byteBuffer.array(), byteBuffer.position(), address, 6000);

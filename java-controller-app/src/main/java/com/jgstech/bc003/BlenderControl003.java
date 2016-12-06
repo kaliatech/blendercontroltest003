@@ -1,8 +1,9 @@
 package com.jgstech.bc003;
 
 
-import com.jgstech.bc003.net.PacketSimServer;
-import jline.*;
+import com.jgstech.bc003.net.PacketReceiveTester;
+import com.jgstech.bc003.net.PacketSendTester;
+import jline.AnsiWindowsTerminal;
 import jline.console.ConsoleReader;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,10 +21,12 @@ public class BlenderControl003 {
 
     public void run() {
 
-        PacketSimServer srvr = new PacketSimServer();
+        PacketSendTester sendTester = new PacketSendTester();
+        PacketReceiveTester rcvTester = new PacketReceiveTester();
 
         try {
-            srvr.init();
+            sendTester.init();
+            rcvTester.init();
 
 
 //            //formatter:on
@@ -86,29 +89,34 @@ public class BlenderControl003 {
             String line = null;
             //console.setPrompt("cmd: ");
             while (running && (line = console.readLine(">> ")) != null) {
-                handleConsoleCmd(srvr, console, line);
+                handleConsoleCmd(sendTester, rcvTester, console, line);
             }
             console.close();
 
-        } catch (Exception e) {
-            srvr.shutdown();
+        }
+        catch (Exception e) {
+            log.error("Unexpected error.", e);
+            sendTester.shutdown();
         }
     }
 
-    private void handleConsoleCmd(PacketSimServer srvr, ConsoleReader console, String line) throws IOException {
+    private void handleConsoleCmd(PacketSendTester packetSendTester, PacketReceiveTester receiveTester, ConsoleReader console, String line) throws IOException {
         //console.println("Received:" + line);
 
-        if (line.trim().equals("")) {
-            for (int i=0;i<10;i++) {
-                srvr.send();
+        if (line.trim().equals("send")) {
+            for (int i = 0; i < 10; i++) {
+                packetSendTester.send();
             }
         }
-
-        if (line.equals("reset")) {
-            srvr.reset();
+        else if (line.trim().equals("") ||
+                line.trim().equals("receive")
+                ) {
+            receiveTester.receive();
         }
-
-        if (line.equals("quit")) {
+        else if (line.equals("reset")) {
+            packetSendTester.reset();
+        }
+        else if (line.equals("quit")) {
             running = false;
         }
     }

@@ -1,13 +1,13 @@
 
 import bpy
-import time
-import sys
-import traceback
 import math
-
+import time
+import traceback
+import struct
+import sys
 import socket
 
-UDP_IP = "127.0.0.1"
+UDP_IP = "0.0.0.0"
 UDP_PORT = 6000
 
 class NetListener(bpy.types.Operator):
@@ -22,7 +22,7 @@ class NetListener(bpy.types.Operator):
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, # Internet
                          socket.SOCK_DGRAM) # UDP
-        self.sock.setblocking(0)
+        #self.sock.setblocking(0)
         self.sock.bind((UDP_IP, UDP_PORT))    
 
     def modal(self, context, event):
@@ -38,14 +38,20 @@ class NetListener(bpy.types.Operator):
 
             # print (location)
             try:                        
-                data, addr = self.sock.recvfrom(1024) # buffer size is 1024 bytes
-                i = int.from_bytes(data, byteorder='big')
-                print ("received messagex:", i)
-                location.y = i
-                rotation.y = math.radians(i) #math.pi * i / 180
-            except socket.error: 
-                # print ('socket.error') 
-                pass
+                #data, addr = self.sock.recvfrom(1024) # buffer size is 1024 bytes
+#                print ("about to receive...")
+                data = self.doreceive(self.sock)
+                # i = int.from_bytes(data, byteorder='big')
+                i = struct.unpack('>fff', data)
+#                print ("received messagex:", i[0])
+                #location.y = i
+                rotation.x = math.radians(i[0] * 10) #math.pi * i / 180
+                rotation.y = math.radians(i[1] * 10) #math.pi * i / 180
+                #rotation.z = math.radians(i[2] * 10) #math.pi * i / 180
+                
+            #except socket.error: 
+            #    print ('socket.error') 
+            #    pass
             except:
                 traceback.print_exc()
                 # print ("Unexpected error:", sys.exc_info()[0])   
@@ -53,7 +59,7 @@ class NetListener(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def execute(self, context):
-        self._timer = context.window_manager.event_timer_add(0.1, context.window)
+        self._timer = context.window_manager.event_timer_add(0.01, context.window)
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
@@ -62,6 +68,17 @@ class NetListener(bpy.types.Operator):
         context.window_manager.event_timer_remove(self._timer)
         return {'CANCELLED'}
 
+    def doreceive(self, socket):
+        MSGLEN = 4 * 3;
+        chunks = []
+        bytes_recd = 0
+        while bytes_recd < MSGLEN:
+            chunk = self.sock.recv(min(MSGLEN - bytes_recd, 1024))
+            if chunk == b'':
+                raise RuntimeError("socket connection broken")
+            chunks.append(chunk)
+            bytes_recd = bytes_recd + len(chunk)
+        return b''.join(chunks)
 
 def register():
     bpy.utils.register_class(NetListener)
@@ -75,4 +92,3 @@ if __name__ == "__main__":
     # test call
     bpy.ops.wm.modal_netlistener_operator()
     
-

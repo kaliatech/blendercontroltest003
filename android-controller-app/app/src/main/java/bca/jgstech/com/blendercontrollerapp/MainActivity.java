@@ -5,14 +5,19 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import msgsender.MessageSender;
+
 public class MainActivity extends AppCompatActivity {
 
+    private static String TAG = MainActivity.class.getSimpleName();
 
     private SensorListener sensorListener;
+    private MessageSender messageSender;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +35,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        sensorListener = new SensorListener(this);
+        messageSender = new MessageSender();
+        try {
+            messageSender.init();
+        } catch (Exception e) {
+            Log.e(TAG, "Unable to start message sender.", e);
+            return;
+        }
+        sensorListener = new SensorListener(this, messageSender);
+
     }
 
     @Override
@@ -57,13 +70,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        sensorListener.onResume();
+        if (sensorListener != null) {
+            sensorListener.onResume();
+        }
         super.onResume();
     }
 
     @Override
     protected void onPause() {
-        sensorListener.onPause();
+        if (sensorListener != null) {
+            sensorListener.onPause();
+        }
         super.onPause();
     }
 
