@@ -1,7 +1,9 @@
-package msgsender;
+package bca.jgstech.com.blendercontrollerapp.msgsender;
 
 
 import android.os.AsyncTask;
+
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -28,19 +30,19 @@ public class MessageSender {
 
     }
 
-    public void sendRotation(float x, float y, float z) throws IOException {
+    public void sendRotation(Vector3D rotation) throws IOException {
 
         byte[] buf = new byte[4];
 
 
-        AsyncTask<Float, Void, Void> asyncTask = new AsyncTask<Float, Void, Void>() {
+        AsyncTask<Vector3D, Void, Void> asyncTask = new AsyncTask<Vector3D, Void, Void>() {
 
             @Override
-            protected Void doInBackground(Float... vals) {
+            protected Void doInBackground(Vector3D... vals) {
                 ByteBuffer byteBuffer = ByteBuffer.allocate(4 * 3);
-                byteBuffer.putFloat(vals[0]);
-                byteBuffer.putFloat(vals[1]);
-                byteBuffer.putFloat(vals[2]);
+                byteBuffer.putFloat((float)vals[0].getX());
+                byteBuffer.putFloat((float)vals[0].getY());
+                byteBuffer.putFloat((float)vals[0].getZ());
 
                 DatagramPacket packet = new DatagramPacket(byteBuffer.array(), byteBuffer.position(), address, 6000);
                 log.debug("Sending packet...");
@@ -53,7 +55,7 @@ public class MessageSender {
             }
         };
 
-        asyncTask.execute(x, y, z);
+        asyncTask.execute(rotation);
 
     }
 

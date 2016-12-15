@@ -11,17 +11,19 @@ import android.util.Log;
 import android.widget.TextView;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import java.io.IOException;
 
+import bca.jgstech.com.blendercontrollerapp.msgsender.MessageSender;
+import bca.jgstech.com.blendercontrollerapp.utils.MathUtils;
 import lombok.extern.slf4j.Slf4j;
-import msgsender.MessageSender;
 
 
 @Slf4j
-public class SensorListener implements SensorEventListener2 {
+public class MainController implements SensorEventListener2 {
 
-    private static String tag = SensorListener.class.getSimpleName();
+    private static String tag = MainController.class.getSimpleName();
 
     private SensorManager mSensorManager;
     private Sensor mSensor;
@@ -29,7 +31,9 @@ public class SensorListener implements SensorEventListener2 {
 
     private MessageSender sender;
 
-    public SensorListener(Activity activity, MessageSender sender) {
+    private Vector3D prevRotation = new Vector3D(0, 0, 0);
+
+    public MainController(Activity activity, MessageSender sender) {
         //mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         //mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
@@ -37,7 +41,7 @@ public class SensorListener implements SensorEventListener2 {
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
 
         tfX = (TextView) activity.findViewById(R.id.tfX);
-        tfX.setText("...");
+        tfX.setText("...xx");
 
         this.sender = sender;
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
@@ -54,9 +58,13 @@ public class SensorListener implements SensorEventListener2 {
         Log.d(tag, "onSensorChanged:" + vals);
         tfX.setText(vals);
 
+        Vector3D currRotation = new Vector3D(sensorEvent.values[0],
+                                             sensorEvent.values[1],
+                                             sensorEvent.values[2]);
 
+        Vector3D rot = MathUtils.lowPass(prevRotation, currRotation);
         try {
-            sender.sendRotation(sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
+            sender.sendRotation(rot);
         } catch (IOException e) {
             Log.d(tag, "Error sending rotation", e);
         }

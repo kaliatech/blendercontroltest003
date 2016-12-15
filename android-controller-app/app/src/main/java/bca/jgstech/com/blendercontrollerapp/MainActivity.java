@@ -10,13 +10,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import msgsender.MessageSender;
+import bca.jgstech.com.blendercontrollerapp.msgsender.MessageSender;
 
 public class MainActivity extends AppCompatActivity {
 
     private static String TAG = MainActivity.class.getSimpleName();
 
-    private SensorListener sensorListener;
+    private MainController sensorListener;
     private MessageSender messageSender;
 
     @Override
@@ -42,8 +42,9 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "Unable to start message sender.", e);
             return;
         }
-        sensorListener = new SensorListener(this, messageSender);
-
+        Log.d(TAG, "Constructing MainController...");
+        sensorListener = new MainController(this, messageSender);
+        Log.d(TAG, "Constructed.");
     }
 
     @Override
