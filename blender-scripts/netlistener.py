@@ -45,9 +45,15 @@ class NetListener(bpy.types.Operator):
                 i = struct.unpack('>fff', data)
 #                print ("received messagex:", i[0])
                 #location.y = i
-                rotation.x = math.radians(i[0] * 10) #math.pi * i / 180
-                rotation.y = math.radians(i[1] * 10) #math.pi * i / 180
-                #rotation.z = math.radians(i[2] * 10) #math.pi * i / 180
+                
+                #rotation.x = math.radians(i[0] * 50) #math.pi * i / 180
+                #rotation.y = math.radians(i[1] * 50) #math.pi * i / 180
+                #rotation.y = math.radians(i[2] * 50) #math.pi * i / 180
+                
+                rotation.z = i[0] * -1
+                rotation.y = i[1] * -1
+                rotation.x = i[2] * -1
+                
                 
             #except socket.error: 
             #    print ('socket.error') 
